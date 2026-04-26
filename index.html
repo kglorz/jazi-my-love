@@ -7,7 +7,6 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;700&display=swap');
 
-  
   :root {
     --lav1: #f0e6ff;
     --lav2: #d8bdf8;
@@ -223,6 +222,8 @@
     letter-spacing: 5px; animation: hb 1.1s ease-in-out infinite;
   }
   @keyframes hb { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+
+
 </style>
 </head>
 <body>
@@ -342,7 +343,34 @@ You are my favourite person, always. 💜
   </div>
 </div>
 
+<!-- Background music (autoplay, looped, hidden) -->
+<audio id="bgMusic" loop autoplay>
+  <source src="Audio/sorry.mp3" type="audio/mpeg">
+  <source src="Audio/sorry.ogg" type="audio/ogg">
+  <source src="Audio/sorry.wav" type="audio/wav">
+</audio>
+
 <script>
+/* ══════════════════════════════════════════════
+   BACKGROUND MUSIC — autoplay on first interaction
+══════════════════════════════════════════════ */
+const bgMusic = document.getElementById('bgMusic');
+bgMusic.volume = 0.5;
+
+// Attempt immediate autoplay; if blocked by browser policy,
+// play on the very first user interaction instead.
+bgMusic.play().catch(() => {
+  const unlock = () => {
+    bgMusic.play();
+    document.removeEventListener('click',      unlock);
+    document.removeEventListener('keydown',    unlock);
+    document.removeEventListener('touchstart', unlock);
+  };
+  document.addEventListener('click',      unlock);
+  document.addEventListener('keydown',    unlock);
+  document.addEventListener('touchstart', unlock);
+});
+
 /* ══════════════════════════════════════════════
    PARTICLES
 ══════════════════════════════════════════════ */
