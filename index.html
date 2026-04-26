@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>For Jazi 🍓</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Nunito:wght@400;600;700&display=swap');
+
+  :root {
+    --lav1: #f0e6ff;
+    --lav2: #d8bdf8;
+    --lav3: #b48ee0;
+    --lav4: #9060cc;
+    --lav5: #6a3aaa;
+    --dark: #2d1a4e;
+    --paper: #f8f2ff;
+    --bb: rgba(255,255,255,0.92);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(150deg, #ede0ff 0%, #d9c2f8 30%, #c8a8f0 60%, #dcc8fc 85%, #ede0ff 100%);
+    font-family: 'Nunito', sans-serif;
+    display: flex; flex-direction: column; align-items: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── Particles ── */
+  .bg-particles { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+  .particle { position: absolute; animation: rise linear infinite; opacity: 0.5; user-select: none; }
+  @keyframes rise {
+    0%   { transform: translateY(108vh) rotate(0deg);   opacity: 0; }
+    10%  { opacity: 0.6; }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-12vh) rotate(380deg); opacity: 0; }
+  }
+
+  /* ── Header ── */
+  header { position: relative; z-index: 1; text-align: center; padding: 2rem 1rem 0.5rem; }
+  header h1 {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(2rem, 6vw, 3.4rem);
+    color: var(--lav5);
+    text-shadow: 2px 3px 0 #fff, 4px 6px 0 rgba(106,58,170,.18);
+  }
+
+  /* ── Main ── */
+  main {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 1.2rem 1rem 3rem; width: 100%;
+  }
+
+  /* ── Speech bubble ── */
+  .bubble {
+    position: relative;
+    background: var(--bb);
+    border: 2.5px solid var(--lav3);
+    border-radius: 20px;
+    padding: 0.85rem 1.25rem;
+    max-width: min(320px, 88vw);
+    text-align: center;
+    font-size: 0.96rem;
+    color: var(--dark);
+    line-height: 1.55;
+    box-shadow: 0 4px 20px rgba(106,58,170,.14);
+    margin-bottom: 1rem;
+    min-height: 58px;
+    display: flex; align-items: center; justify-content: center;
+    transition: opacity 0.4s ease;
+  }
+  .bubble.hidden { opacity: 0; pointer-events: none; }
+  .bubble::after {
+    content:''; position:absolute; bottom:-14px; left:50%; transform:translateX(-50%);
+    border:7px solid transparent; border-top-color:var(--lav3);
+  }
+  .bubble::before {
+    content:''; position:absolute; bottom:-11px; left:50%; transform:translateX(-50%);
+    border:6px solid transparent; border-top-color:var(--bb); z-index:1;
+  }
+  #bubbleText { transition: opacity 0.28s ease; }
+
+  /* ── Strawberry ── */
+  .berry-wrap {
+    position: relative;
+    transform-origin: center center;
+    margin-bottom: 0.5rem;
+  }
+  .berry-svg {
+    width: 148px; height: 178px;
+    overflow: visible;
+    filter: drop-shadow(0 8px 18px rgba(106,58,170,.22));
+    animation: sway 3s ease-in-out infinite;
+  }
+  .berry-wrap.no-sway .berry-svg { animation: none; }
+  @keyframes sway {
+    0%,100% { transform: rotate(-2.5deg); }
+    50%      { transform: rotate(2.5deg);  }
+  }
+
+  /* ── Buttons ── */
+  .btn-row {
+    display: flex; gap: 1.2rem; align-items: center;
+    margin-top: 0.9rem; position: relative;
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.6s ease;
+  }
+  .btn-row.show { opacity: 1; pointer-events: auto; }
+
+  .btn {
+    font-family: 'Nunito', sans-serif; font-weight: 700;
+    font-size: 1rem; padding: 0.65rem 2.1rem;
+    border: none; border-radius: 50px; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0,0,0,.13); position: relative;
+  }
+  .btn-yes {
+    background: linear-gradient(135deg, var(--lav3), var(--lav5));
+    color: #fff; z-index: 2;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-yes:hover { transform: scale(1.08); box-shadow: 0 6px 22px rgba(106,58,170,.45); }
+  .btn-no { background: linear-gradient(135deg,#bbb,#999); color:#fff; z-index:1; position: relative; }
+
+  /* ── Letter icon — centered, enlarged ── */
+  .letter-icon {
+    display: none;
+    font-size: 5rem;
+    cursor: pointer;
+    user-select: none;
+    animation: pulse 2s ease-in-out infinite;
+    /* fixed center of viewport */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    filter: drop-shadow(0 6px 18px rgba(106,58,170,.35));
+  }
+  .letter-icon.show { display: block; }
+  @keyframes pulse { 0%,100%{transform: translate(-50%, -50%) scale(1)} 50%{transform: translate(-50%, -50%) scale(1.12)} }
+
+  /* ── Zoom canvas ── */
+  #zoomCanvas {
+    display: none; position: fixed; inset: 0;
+    z-index: 200; pointer-events: none;
+  }
+
+  /* ── Letter overlay ── */
+  .overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(30,10,60,.58);
+    backdrop-filter: blur(6px);
+    z-index: 300;
+    align-items: center; justify-content: center;
+    padding: 1.5rem;
+  }
+  .overlay.open { display: flex; animation: fin .45s ease; }
+  @keyframes fin { from{opacity:0} to{opacity:1} }
+
+  /* Letter card */
+  .letter {
+    background: var(--paper);
+    border: 2px solid var(--lav3);
+    border-radius: 16px;
+    max-width: min(480px, 92vw);
+    width: 100%;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    position: relative;
+    box-shadow: 0 12px 50px rgba(106,58,170,.3), inset 0 0 50px rgba(180,142,224,.1);
+    animation: pop .5s cubic-bezier(.34,1.56,.64,1);
+    font-family: 'Dancing Script', cursive;
+    overflow: hidden;
+  }
+  @keyframes pop { from{transform:scale(.5);opacity:0} to{transform:scale(1);opacity:1} }
+
+  .letter-header {
+    display: flex; align-items: center; justify-content: flex-end;
+    padding: 0.85rem 1rem 0.5rem;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(180,142,224,.25);
+  }
+  .letter-x {
+    width: 32px; height: 32px;
+    background: var(--lav2);
+    border: none; border-radius: 50%;
+    font-size: 1rem; font-weight: 700;
+    color: var(--lav5); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background .2s, transform .15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .letter-x:hover { background: var(--lav3); color: #fff; transform: scale(1.1); }
+
+  .letter-scroll {
+    overflow-y: auto;
+    padding: 1.5rem 2rem 2rem;
+    flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--lav3) transparent;
+  }
+  .letter-scroll::-webkit-scrollbar { width: 5px; }
+  .letter-scroll::-webkit-scrollbar-thumb { background: var(--lav3); border-radius: 4px; }
+  .letter-scroll::-webkit-scrollbar-track { background: transparent; }
+
+  .letter-inner {
+    border: 1px dashed rgba(155,111,212,.3);
+    border-radius: 8px;
+    padding: 1rem 1rem 0.5rem;
+  }
+
+  .letter-title { font-size: 1.75rem; color: var(--lav5); text-align: center; margin-bottom: 1rem; }
+  .letter-body  { font-size: 1.12rem; color: #3a1860; line-height: 1.85; white-space: pre-line; text-align: center; }
+  .letter-sig   { text-align: right; margin-top: 1.3rem; font-size: 1.25rem; color: var(--lav5); }
+  .letter-hrt   {
+    text-align: center; font-size: 1.4rem; margin-top: .5rem;
+    letter-spacing: 5px; animation: hb 1.1s ease-in-out infinite;
+  }
+  @keyframes hb { 0%,100%{transform:scale(1)} 50%{transform:scale(1.18)} }
+</style>
+</head>
+<body>
+
+<div class="bg-particles" id="particles"></div>
+<header><h1>🍓 A Message for Jazi 🍓</h1></header>
+
+<main>
+  <div class="bubble" id="bubble"><span id="bubbleText">…</span></div>
+
+  <div class="berry-wrap" id="berryWrap">
+    <svg class="berry-svg" id="berrySvg" viewBox="0 0 160 220" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="rg" cx="38%" cy="30%" r="66%">
+          <stop offset="0%"   stop-color="#ff7070"/>
+          <stop offset="58%"  stop-color="#de2538"/>
+          <stop offset="100%" stop-color="#9e0f25"/>
+        </radialGradient>
+      </defs>
+
+      <!-- Leaves -->
+      <ellipse cx="80" cy="44" rx="15" ry="26" fill="#4caf50" transform="rotate(-26 80 44)"/>
+      <ellipse cx="80" cy="44" rx="15" ry="26" fill="#388e3c" transform="rotate(26 80 44)"/>
+      <ellipse cx="80" cy="38" rx="11" ry="20" fill="#66bb6a" transform="rotate(-7 80 38)"/>
+      <ellipse cx="80" cy="38" rx="11" ry="20" fill="#4caf50" transform="rotate(7 80 38)"/>
+      <ellipse cx="80" cy="40" rx="7"  ry="16" fill="#81c784"/>
+
+      <!-- Body -->
+      <path id="berryBody"
+            d="M80 55 C42 55,18 95,20 140 C22 178,54 210,80 210 C106 210,138 178,140 140 C142 95,118 55,80 55 Z"
+            fill="url(#rg)" stroke="#a01022" stroke-width="1.5"/>
+
+      <!-- Seeds -->
+      <g fill="rgba(255,255,255,.62)">
+        <ellipse cx="63"  cy="100" rx="2.7" ry="3.6" transform="rotate(-12 63 100)"/>
+        <ellipse cx="87"  cy="90"  rx="2.7" ry="3.6" transform="rotate(9 87 90)"/>
+        <ellipse cx="50"  cy="126" rx="2.7" ry="3.6" transform="rotate(-9 50 126)"/>
+        <ellipse cx="73"  cy="120" rx="2.7" ry="3.6"/>
+        <ellipse cx="99"  cy="117" rx="2.7" ry="3.6" transform="rotate(13 99 117)"/>
+        <ellipse cx="57"  cy="154" rx="2.7" ry="3.6" transform="rotate(-6 57 154)"/>
+        <ellipse cx="83"  cy="152" rx="2.7" ry="3.6" transform="rotate(6 83 152)"/>
+        <ellipse cx="106" cy="142" rx="2.7" ry="3.6" transform="rotate(14 106 142)"/>
+        <ellipse cx="70"  cy="180" rx="2.7" ry="3.6"/>
+        <ellipse cx="91"  cy="176" rx="2.7" ry="3.6" transform="rotate(7 91 176)"/>
+      </g>
+
+      <!-- Eyes -->
+      <ellipse cx="64" cy="112" rx="9"  ry="10" fill="#fff"/>
+      <ellipse cx="96" cy="112" rx="9"  ry="10" fill="#fff"/>
+      <circle  cx="65" cy="113" r="6"   fill="#18082c"/>
+      <circle  cx="97" cy="113" r="6"   fill="#18082c"/>
+      <circle  cx="67" cy="111" r="2"   fill="#fff"/>
+      <circle  cx="99" cy="111" r="2"   fill="#fff"/>
+
+      <!-- Blush -->
+      <ellipse cx="49"  cy="124" rx="10" ry="5" fill="#ff8fa3" opacity="0.36"/>
+      <ellipse cx="111" cy="124" rx="10" ry="5" fill="#ff8fa3" opacity="0.36"/>
+
+      <!-- Mouth closed: simple smile -->
+      <path id="mouthClosed"
+            d="M66 150 Q80 161 94 150"
+            fill="none" stroke="#7a0010" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- Mouth open: white oval -->
+      <ellipse id="mouthOpen" cx="80" cy="153" rx="13" ry="8"
+               fill="#fff" stroke="#7a0010" stroke-width="2" display="none"/>
+    </svg>
+  </div>
+
+  <!-- Letter icon — reopen after closing -->
+  <div class="letter-icon" id="letterIcon" title="Read again">💌</div>
+
+  <!-- Yes / No buttons -->
+  <div class="btn-row" id="btnRow">
+    <button class="btn btn-yes" id="yesBtn">Yes 💖</button>
+    <button class="btn btn-no"  id="noBtn">No 🙄</button>
+  </div>
+</main>
+
+<!-- Zoom canvas -->
+<canvas id="zoomCanvas"></canvas>
+
+<!-- Letter overlay -->
+<div class="overlay" id="overlay">
+  <div class="letter" id="letterEl">
+    <div class="letter-header">
+      <button class="letter-x" id="closeBtn" aria-label="Close">✕</button>
+    </div>
+    <div class="letter-scroll">
+      <div class="letter-inner">
+        <div class="letter-title">My Dearest Jazi,</div>
+        <div class="letter-body">
+I know falling asleep on you during our calls
+is one of the silliest, most frustrating things
+I keep doing — and I'm truly sorry for it. 😔
+
+You deserve someone fully present,
+wide awake, and hanging on your every word.
+
+I promise I'm working on it.
+You mean the absolute world to me,
+and I never want to make you feel
+like you're talking to yourself.
+
+Thank you for being patient with me,
+even when I don't deserve it. 🍓
+
+I love you more than any strawberry
+could ever express — and that's saying something.
+
+You are my favourite person, always. 💜
+        </div>
+        <div class="letter-sig">— Your Sleepy Husband 💕</div>
+        <div class="letter-hrt">🍓 💜 🍓 💜 🍓</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   PARTICLES
+══════════════════════════════════════════════ */
+const emo = ['🍓','💜','🌸','✨','💕','🌺','🎀','💗','🍇','🌷','⭐','🫐'];
+const pc  = document.getElementById('particles');
+for (let i = 0; i < 28; i++) {
+  const d = document.createElement('div');
+  d.className = 'particle';
+  d.textContent = emo[Math.floor(Math.random() * emo.length)];
+  d.style.cssText = `left:${Math.random()*100}vw;font-size:${.85+Math.random()*1.1}rem;
+    animation-duration:${9+Math.random()*13}s;animation-delay:${-Math.random()*16}s;`;
+  pc.appendChild(d);
+}
+
+/* ══════════════════════════════════════════════
+   SIMPLE MOUTH — toggle open/closed every ~400ms
+══════════════════════════════════════════════ */
+const mouthClosed = document.getElementById('mouthClosed');
+const mouthOpen   = document.getElementById('mouthOpen');
+
+let talking = false;
+let mouthInterval = null;
+let mouthIsOpen = false;
+
+function setMouthOpen(open) {
+  mouthIsOpen = open;
+  mouthClosed.setAttribute('display', open ? 'none' : '');
+  mouthOpen.setAttribute('display',   open ? ''     : 'none');
+}
+
+function startTalk() {
+  if (talking) return;
+  talking = true;
+  mouthInterval = setInterval(() => {
+    setMouthOpen(!mouthIsOpen);
+  }, 380);
+}
+
+function stopTalk() {
+  talking = false;
+  clearInterval(mouthInterval);
+  setMouthOpen(false); // always end closed
+}
+
+/* ══════════════════════════════════════════════
+   DIALOGUE
+══════════════════════════════════════════════ */
+const lines = [
+  "Hello, Jazi dear! I know your boyfriend slept on you again while on call…",
+  "He can be a real letdown at times 😅",
+  "But he hopes to make it up to you 💕",
+  "Your husband says sorry. Will you forgive him? 🍓"
+];
+
+const bubbleText = document.getElementById('bubbleText');
+const btnRow     = document.getElementById('btnRow');
+const bubble     = document.getElementById('bubble');
+let li = 0;
+
+function showLine(txt, isLast, next) {
+  bubbleText.style.opacity = 0;
+  setTimeout(() => {
+    bubbleText.textContent = txt;
+    bubbleText.style.opacity = 1;
+    startTalk();
+    const dur = Math.min(3200, 1000 + txt.length * 34);
+    setTimeout(() => {
+      stopTalk();
+      if (isLast) btnRow.classList.add('show');
+      setTimeout(next, isLast ? 0 : 600);
+    }, dur);
+  }, 320);
+}
+
+function runD() {
+  if (li >= lines.length) return;
+  const i = li++, last = i === lines.length - 1;
+  showLine(lines[i], last, runD);
+}
+setTimeout(runD, 700);
+
+/* ══════════════════════════════════════════════
+   LETTER
+══════════════════════════════════════════════ */
+const overlay    = document.getElementById('overlay');
+const letterIcon = document.getElementById('letterIcon');
+const letterEl   = document.getElementById('letterEl');
+
+function openLetter() {
+  overlay.classList.add('open');
+  letterEl.style.animation = 'none';
+  void letterEl.offsetHeight;
+  letterEl.style.animation = '';
+  const scroll = letterEl.querySelector('.letter-scroll');
+  if (scroll) scroll.scrollTop = 0;
+}
+
+function closeLetter() {
+  overlay.classList.remove('open');
+  letterIcon.classList.add('show');
+}
+
+document.getElementById('closeBtn').addEventListener('click', closeLetter);
+letterIcon.addEventListener('click', openLetter);
+
+/* ══════════════════════════════════════════════
+   ZOOM INTO MOUTH → AUTO OPEN LETTER
+══════════════════════════════════════════════ */
+const MOUTH_CX   = 80;
+const LIP_TOP_Y  = 148;
+const LIP_OPEN_Y = 170;
+
+function doZoomSequence() {
+  const berryWrap = document.getElementById('berryWrap');
+  const berrySvg  = document.getElementById('berrySvg');
+  const canvas    = document.getElementById('zoomCanvas');
+  const ctx       = canvas.getContext('2d');
+
+  berryWrap.classList.add('no-sway');
+  bubble.classList.add('hidden');
+
+  // Show open mouth for zoom
+  setMouthOpen(true);
+
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+
+  const svgRect = berrySvg.getBoundingClientRect();
+
+  const svgData = new XMLSerializer().serializeToString(berrySvg);
+  const blob    = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+  const url     = URL.createObjectURL(blob);
+  const img     = new Image();
+
+  img.onload = () => {
+    URL.revokeObjectURL(url);
+    berryWrap.style.opacity = '0';
+
+    const SVG_VB_W = 160, SVG_VB_H = 220;
+    const mouthSvgX = MOUTH_CX;
+    const mouthSvgY = (LIP_TOP_Y + LIP_OPEN_Y) / 2;
+    const fracX = mouthSvgX / SVG_VB_W;
+    const fracY = mouthSvgY / SVG_VB_H;
+
+    const startW = svgRect.width;
+    const startH = svgRect.height;
+    const startX = svgRect.left;
+    const startY = svgRect.top;
+
+    const anchorX = canvas.width  / 2;
+    const anchorY = canvas.height / 2;
+
+    const mouthWidthFrac = 26 / SVG_VB_W;
+    const targetFinalW = canvas.width  / mouthWidthFrac * 1.8;
+    const targetFinalH = canvas.height / mouthWidthFrac * 1.8;
+    const finalW = Math.max(targetFinalW, targetFinalH);
+    const finalH = finalW * (startH / startW);
+
+    const duration = 1900;
+    let start = null;
+
+    function ease(t) { return t * t * (3 - 2 * t); }
+
+    function frame(ts) {
+      if (!start) start = ts;
+      const raw = Math.min((ts - start) / duration, 1);
+      const t   = ease(raw);
+
+      const curW = startW + (finalW - startW) * t;
+      const curH = startH + (finalH - startH) * t;
+
+      const mImgX = fracX * curW;
+      const mImgY = fracY * curH;
+
+      const drawX = anchorX - mImgX;
+      const drawY = anchorY - mImgY;
+
+      const darkness = Math.min(1, t * 2.2);
+      ctx.fillStyle = `rgba(50, 4, 14, ${darkness})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(img, drawX, drawY, curW, curH);
+
+      if (raw < 1) {
+        requestAnimationFrame(frame);
+      } else {
+        ctx.fillStyle = 'rgba(50,4,14,1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        setTimeout(() => {
+          canvas.style.display = 'none';
+          openLetter();
+        }, 100);
+      }
+    }
+
+    requestAnimationFrame(frame);
+  };
+
+  img.src = url;
+}
+
+/* ══════════════════════════════════════════════
+   YES BUTTON
+══════════════════════════════════════════════ */
+const yesBtn = document.getElementById('yesBtn');
+const noBtn  = document.getElementById('noBtn');
+let yesDone  = false;
+
+yesBtn.addEventListener('click', () => {
+  if (yesDone) { openLetter(); return; }
+  yesDone = true;
+  stopTalk();
+  noBtn.style.display  = 'none';
+  yesBtn.style.display = 'none';
+  setTimeout(doZoomSequence, 200);
+});
+
+/* ══════════════════════════════════════════════
+   NO BUTTON — SMOOTH PHYSICS FLEE
+══════════════════════════════════════════════ */
+let noX, noY, noVx = 0, noVy = 0;
+let noFixed = false;
+let mouseX = -9999, mouseY = -9999;
+
+document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; });
+
+function initNoPos() {
+  const r = noBtn.getBoundingClientRect();
+  noX = r.left + r.width  / 2;
+  noY = r.top  + r.height / 2;
+}
+
+function noPhysicsTick() {
+  if (!noFixed) return;
+
+  const bw = noBtn.offsetWidth;
+  const bh = noBtn.offsetHeight;
+  const influence = 180;
+
+  const dx = noX - mouseX;
+  const dy = noY - mouseY;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+  if (dist < influence) {
+    const strength = Math.pow(1 - dist / influence, 1.5) * 28;
+    noVx += (dx / dist) * strength;
+    noVy += (dy / dist) * strength;
+  }
+
+  noVx *= 0.80;
+  noVy *= 0.80;
+  noX  += noVx;
+  noY  += noVy;
+
+  const mg = 8;
+  if (noX - bw/2 < mg)                         { noX = mg + bw/2;                          noVx =  Math.abs(noVx) * 0.55; }
+  if (noX + bw/2 > window.innerWidth  - mg)    { noX = window.innerWidth  - mg - bw/2;     noVx = -Math.abs(noVx) * 0.55; }
+  if (noY - bh/2 < mg)                         { noY = mg + bh/2;                           noVy =  Math.abs(noVy) * 0.55; }
+  if (noY + bh/2 > window.innerHeight - mg)    { noY = window.innerHeight - mg - bh/2;      noVy = -Math.abs(noVy) * 0.55; }
+
+  noBtn.style.left = (noX - bw / 2) + 'px';
+  noBtn.style.top  = (noY - bh / 2) + 'px';
+
+  requestAnimationFrame(noPhysicsTick);
+}
+
+noBtn.addEventListener('mouseenter', () => {
+  if (!noFixed) {
+    initNoPos();
+    noBtn.style.position = 'fixed';
+    noBtn.style.zIndex   = '50';
+    noBtn.style.margin   = '0';
+    noBtn.style.left = (noX - noBtn.offsetWidth  / 2) + 'px';
+    noBtn.style.top  = (noY - noBtn.offsetHeight / 2) + 'px';
+    noFixed = true;
+    noPhysicsTick();
+  }
+  const dx = noX - mouseX, dy = noY - mouseY;
+  const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+  noVx += (dx / dist) * 20;
+  noVy += (dy / dist) * 20;
+});
+
+let noPresses = 0;
+noBtn.addEventListener('click', () => {
+  noPresses++;
+  const s = 1 + noPresses * 0.32;
+  yesBtn.style.transform = `scale(${s})`;
+  yesBtn.style.zIndex    = '20';
+  yesBtn.style.position  = 'relative';
+  if (s >= 3) { noBtn.style.opacity = '0'; noBtn.style.pointerEvents = 'none'; }
+});
+</script>
+</body>
+</html>
